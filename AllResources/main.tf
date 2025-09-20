@@ -1,28 +1,3 @@
-terraform {
-  required_providers {
-    azurerm = {
-      source = "hashicorp/azurerm"
-      version = "4.44.0"
-    }
-  }
-}
-
-provider "azurerm" {
-    features {
-      
-    }  
- 
-
-}
-
-locals {
-  rg_name = "app-grp"
-  location ="West Europe"
-  sg_name = "app-network-sg"
-  network_name = "app-network"
-  subnet_1_name = "websubnet01"
-  subnet_2_name = "appsubnet02"
-}
 
 resource "azurerm_resource_group" "appgrp" {
   name     = local.rg_name
