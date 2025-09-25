@@ -12,3 +12,9 @@ variable vm_user_password{
     type = string
     description = "This variable used to provide VM password"
 }
+
+variable vm_size{
+    type = string
+    description = "This variable is used to pass VM size value but has defualt in it"
+    default = "Standard_B2s"
+}
