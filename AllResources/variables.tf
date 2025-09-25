@@ -11,6 +11,7 @@ variable vm_user_name{
 variable vm_user_password{
     type = string
     description = "This variable used to provide VM password"
+    sensitive = true
 }
 
 variable vm_size{
