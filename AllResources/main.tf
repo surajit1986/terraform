@@ -166,3 +166,33 @@ resource "azurerm_windows_virtual_machine" "webvm" {
     version   = "latest"
   }
 }
+
+
+# configuration for extended data disk
+resource "azurerm_managed_disk" "datadisk01" {
+  name                 = "datadisk01"
+  location             = azurerm_resource_group.appgrp.location
+  resource_group_name  = azurerm_resource_group.appgrp.name
+  storage_account_type = "Standard_LRS"
+  create_option        = "Empty"
+  disk_size_gb         = "1"
+
+}
+
+# configuration for extended data disk attachment
+resource "azurerm_virtual_machine_data_disk_attachment" "datadiskattach01" {
+  managed_disk_id    = azurerm_managed_disk.datadisk01.id
+  virtual_machine_id = azurerm_windows_virtual_machine.webvm.id
+  lun                = "0"
+  caching            = "ReadWrite"
+}
+
+# configuration to create 3 storage accounts using count and string interpolation
+resource "azurerm_storage_account" "appstorageaccount" {
+  count = 3
+  name                     = "${count.index}storageaccount"
+  resource_group_name      = azurerm_resource_group.appgrp.name
+  location                 = azurerm_resource_group.appgrp.location
+  account_tier             = "Standard"
+  account_replication_type = "GRS"
+}
