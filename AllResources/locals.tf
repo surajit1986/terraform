@@ -17,4 +17,8 @@ locals {
   ]
 
   network_interface_name = "appnetworkinterface"
+  web_network_interface_name = "webnetworkinterface"
+  web_ip_name = "webip"
 }
+
+

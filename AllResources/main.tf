@@ -45,7 +45,59 @@ resource "azurerm_network_interface" "appnetworkinterface" {
 
   ip_configuration {
     name                          = "internal"
-    subnet_id                     = azurerm_subnet.websubet01.id
+    subnet_id                     = azurerm_subnet.appsubnet01.id
     private_ip_address_allocation = "Dynamic"
   }
+}
+
+resource "azurerm_network_interface" "webnetworkinterface" {
+  name                = local.web_network_interface_name
+  location            = azurerm_resource_group.appgrp.location
+  resource_group_name = azurerm_resource_group.appgrp.name
+
+  ip_configuration {
+    name                          = "internal"
+    subnet_id                     = azurerm_subnet.websubet01.id
+    private_ip_address_allocation = "Dynamic"
+    public_ip_address_id = azurerm_public_ip.webip.id
+    
+  }
+
+  depends_on = [ azurerm_public_ip.webip ]
+}
+
+resource "azurerm_public_ip" "webip" {
+  name                    = local.web_ip_name
+  location                = azurerm_resource_group.appgrp.location
+  resource_group_name     = azurerm_resource_group.appgrp.name
+  allocation_method       = "Static"
+  idle_timeout_in_minutes = 30
+}
+
+resource "azurerm_network_security_group" "appnsg" {
+  name                = "app-nsg"
+  location            = azurerm_resource_group.appgrp.location
+  resource_group_name = azurerm_resource_group.appgrp.name
+
+  security_rule {
+    name                       = "AllowRDP"
+    priority                   = 300
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "3389"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+}
+
+resource "azurerm_subnet_network_security_group_association" "appsubnetassoc" {
+  subnet_id                 = azurerm_subnet.appsubnet01.id
+  network_security_group_id = azurerm_network_security_group.appnetworksg.id
+}
+
+resource "azurerm_subnet_network_security_group_association" "websubnetassoc" {
+  subnet_id                 = azurerm_subnet.websubet01.id
+  network_security_group_id = azurerm_network_security_group.appnetworksg.id
 }
