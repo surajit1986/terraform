@@ -38,6 +38,7 @@ resource "azurerm_subnet" "appsubnet01" {
   address_prefixes     = local.subnets[1].address_prefixes
 }
 
+# Network interface for app subnet
 resource "azurerm_network_interface" "appnetworkinterface" {
   name                = local.network_interface_name
   location            = azurerm_resource_group.appgrp.location
@@ -50,6 +51,7 @@ resource "azurerm_network_interface" "appnetworkinterface" {
   }
 }
 
+# Network interface for web subnet
 resource "azurerm_network_interface" "webnetworkinterface" {
   name                = local.web_network_interface_name
   location            = azurerm_resource_group.appgrp.location
@@ -66,6 +68,7 @@ resource "azurerm_network_interface" "webnetworkinterface" {
   depends_on = [ azurerm_public_ip.webip ]
 }
 
+# Create a public IP address
 resource "azurerm_public_ip" "webip" {
   name                    = local.web_ip_name
   location                = azurerm_resource_group.appgrp.location
@@ -74,6 +77,7 @@ resource "azurerm_public_ip" "webip" {
   idle_timeout_in_minutes = 30
 }
 
+# network security group to allow traffic on a particular port
 resource "azurerm_network_security_group" "appnsg" {
   name                = "app-nsg"
   location            = azurerm_resource_group.appgrp.location
@@ -92,12 +96,39 @@ resource "azurerm_network_security_group" "appnsg" {
   }
 }
 
+# associate NSG to app subnet
 resource "azurerm_subnet_network_security_group_association" "appsubnetassoc" {
   subnet_id                 = azurerm_subnet.appsubnet01.id
   network_security_group_id = azurerm_network_security_group.appnetworksg.id
 }
 
+# associate NSG to web subnet
 resource "azurerm_subnet_network_security_group_association" "websubnetassoc" {
   subnet_id                 = azurerm_subnet.websubet01.id
   network_security_group_id = azurerm_network_security_group.appnetworksg.id
+}
+
+# configuration for windows VM
+resource "azurerm_windows_virtual_machine" "webvm" {
+  name                = "web-vm"
+  resource_group_name = azurerm_resource_group.appgrp.name
+  location            = azurerm_resource_group.appgrp.location
+  size                = "Standard_B2s"
+  admin_username      = "appuser"
+  admin_password      = "Azure@123"
+  network_interface_ids = [
+    azurerm_network_interface.webnetworkinterface.id
+  ]
+
+  os_disk {
+    caching              = "ReadWrite"
+    storage_account_type = "Standard_LRS"
+  }
+
+  source_image_reference {
+    publisher = "MicrosoftWindowsServer"
+    offer     = "WindowsServer"
+    sku       = "2022-Datacenter"
+    version   = "latest"
+  }
 }
