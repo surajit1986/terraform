@@ -9,6 +9,29 @@ resource "azurerm_network_security_group" "appnetworksg" {
   location            = azurerm_resource_group.appgrp.location
   resource_group_name = azurerm_resource_group.appgrp.name
   depends_on = [ azurerm_resource_group.appgrp ]
+
+  security_rule {
+    name                       = "AllowRDP"
+    priority                   = 200
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "3389"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+  security_rule {
+    name                       = "AllowAll"
+    priority                   = 300
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "*"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
 }
 
 resource "azurerm_virtual_network" "appnetwork" {
@@ -85,12 +108,23 @@ resource "azurerm_network_security_group" "appnsg" {
 
   security_rule {
     name                       = "AllowRDP"
-    priority                   = 300
+    priority                   = 200
     direction                  = "Inbound"
     access                     = "Allow"
     protocol                   = "Tcp"
     source_port_range          = "*"
     destination_port_range     = "3389"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+  security_rule {
+    name                       = "AllowAll"
+    priority                   = 300
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "*"
     source_address_prefix      = "*"
     destination_address_prefix = "*"
   }
@@ -110,7 +144,7 @@ resource "azurerm_subnet_network_security_group_association" "websubnetassoc" {
 
 # configuration for windows VM
 resource "azurerm_windows_virtual_machine" "webvm" {
-  name                = "web-vm"
+  name                = var.vm_name
   resource_group_name = azurerm_resource_group.appgrp.name
   location            = azurerm_resource_group.appgrp.location
   size                = "Standard_B2s"
