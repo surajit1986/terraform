@@ -148,8 +148,8 @@ resource "azurerm_windows_virtual_machine" "webvm" {
   resource_group_name = azurerm_resource_group.appgrp.name
   location            = azurerm_resource_group.appgrp.location
   size                = "Standard_B2s"
-  admin_username      = "appuser"
-  admin_password      = "Azure@123"
+  admin_username      = var.vm_user_name
+  admin_password      = var.vm_user_password
   network_interface_ids = [
     azurerm_network_interface.webnetworkinterface.id
   ]
